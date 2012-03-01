@@ -1,19 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
-<movme>
-    <!-- Movies -->
-    <filter name="Films" path="/home/amule/Download/movies/films/">
+<?xml version="1.0" encoding="utf-8"?>                                                                                                                                                                             
+<movme>                                                                                                                                                                                                            
+    <!-- Movies -->                                                                                                                                                                                                
+    <filter name="Films" path="/home/p2p/Downloads/movies/films/">                                                                                                                                                 
+        <rules>                                                                                                                                                                                                    
+            <filename priority="20">[hx]?\.?264|DivX|XviD|AC3|ITA|DVDRip|CD0?[2-4]</filename>                                                                                                                      
+            <filename priority="2">MP3|AAC</filename>                                                                                                                                                              
+            <filesize_bigger priority="10">600M</filesize_bigger>                                                                                                                                                  
+            <filesize_bigger priority="-15">3G</filesize_bigger>                                                                                                                                                   
+            <filesize_smaller priority="-15">600M</filesize_smaller>                                                                                                                                               
+            <fileext priority="10" needed="1">avi mkv</fileext>                                                                                                                                                    
+        </rules>                                                                                                                                                                                                   
+        <actions>                                                                                                                                                                                                  
+                <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>                                                                                                                                                    
+                <exec_linux_cmd><![CDATA[/usr/local/sbin/rssappend -m 10 -t "%n" -d "category: <strong>Films</strong><br/>moved: '%d'" -a "aMule" -c "p2p" -g "%n" -k /var/www/feed/p2p-report.xml]]></exec_linux_cmd>                                                                                                                                                                                                      
+        </actions>  
+    </filter>
+
+    <!--HD Movies -->
+    <filter name="Films HD" path="/home/p2p/Downloads/movies/films hd/">
         <rules>
             <filename priority="20">[hx]?\.?264|DivX|XviD|AC3|ITA|DVDRip|CD0?[2-4]</filename>
             <filename priority="2">MP3|AAC</filename>
-            <filesize_bigger priority="10">600M</filesize_bigger>
-            <filesize_smaller priority="-15">600M</filesize_smaller>
+            <filesize_bigger priority="10">2G</filesize_bigger>
+            <filesize_smaller priority="-15">2G</filesize_smaller>
             <fileext priority="10" needed="1">avi mkv</fileext>
         </rules>
         <actions>
-	    <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
-        </actions>  
+                <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
+                <exec_linux_cmd><![CDATA[/usr/local/sbin/rssappend -m 10 -t "%n" -d "category: <strong>Films HD</strong><br/>moved: '%d'" -a "aMule" -c "p2p" -g "%n" -k /var/www/feed/p2p-report.xml]]></exec_linux_cmd>
+        </actions>
     </filter>
-    <filter name="Subtitles" path="/home/amule/Download/movies/subtitles/">
+
+    <filter name="Subtitles" path="/home/p2p/Downloads/movies/subtitles/">
         <rules>
             <filename priority="20">FORCED|All.?Subs?|Subs?|Pack</filename>
             <filesize_bigger priority="-1000">100M</filesize_bigger>
@@ -26,80 +44,35 @@
             <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
         </actions>  
     </filter>
-    <!-- Series -->
-    <filter name="The Big Bang Theory" mkdir="775" path="/home/amule/Download/movies/series/tv/The Big Bang Theory/">
-        <rules>
-            <filename needed="1" priority="100">The\.Big\.Bang\.Theory</filename>
-            <fileext needed="1" priority="10">avi srt mp3 mkv</fileext>
-        </rules>
-        <actions>
-            <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
-        </actions>
-    </filter>
-<!-- DISABLED FITERS
-    <filter name="Dr.House" mkdir="1" path="/home/amule/Download/movies/series/tv/Dr.House/">
-        <rules>
-            <filename needed="1" priority="100">Dr\.*House|Medical\.*Division|House\.S</filename>
-            <fileext needed="1" priority="10">avi srt mp3</fileext>
-        </rules>
-        <actions>
-            <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
-        </actions>
-    </filter>
-    <filter name="Najica" mkdir="1" path="/home/amule/Download/movies/series/cartoon/Najica/">
-        <rules>
-            <filename needed="1" priority="100">Najica\.Blitz\.Tactics</filename>
-            <fileext needed="1" priority="10">avi</fileext>
-        </rules>
-        <actions>
-            <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
-        </actions>
-    </filter>
-    <filter name="Gantz" mkdir="1" path="/home/amule/Download/movies/series/cartoon/Gantz/">
-        <rules>
-            <filename needed="1" priority="100">Gantz</filename>
-            <fileext needed="1" priority="10">avi</fileext>
-        </rules>
-        <actions>
-            <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
-        </actions>
-    </filter>
-    <filter name="Azumanga Daioh" mkdir="1" path="/home/amule/Download/movies/series/cartoon/Azumanga Daioh/">
-        <rules>
-            <filename needed="1" priority="100">AzumangaDaioh</filename>
-            <fileext needed="1" priority="10">avi</fileext>
-        </rules>
-        <actions>
-            <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
-        </actions>
-    </filter>
-    <filter name="Neon Genesis Evangelion" mkdir="1" path="/home/amule/Download/movies/series/cartoon/Neon Genesis Evangelion/">
-        <rules>
-            <filename needed="1" priority="100">Neon\.Genesis\.Evangelion\.Platinum\.Edition</filename>
-            <fileext needed="1" priority="10">mkv</fileext>
-        </rules>
-        <actions>
-            <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
-        </actions>
-    </filter>
--->
-    <!-- Keep Away -->
-    <filter name="KeepAway" path="/home/amule/Download/keepAway/fake/">
-        <rules>
-            <filename needed="1" priority="100">xxx</filename>
-        </rules>
-        <actions>
-            <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
-        </actions>
-    </filter>
 
+    <!-- Series -->
+    <filter name="Breaking Bad" mkdir="775" path="/home/p2p/Downloads/movies/series/tv/Breaking Bad/">
+        <rules>
+            <filename needed="1" priority="100">Breaking\.bad</filename>
+            <fileext needed="1" priority="10">avi mp3 srt mkv</fileext>
+        </rules>
+        <actions>
+            <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
+        </actions>
+    </filter>
+	<!-- DISABLED FILTER
+    <filter name="The Pacific" mkdir="775" path="/home/p2p/Downloads/movies/series/tv/The Pacific">
+        <rules>
+            <filename needed="1" priority="100">The\.Pacific</filename>
+            <fileext needed="1" priority="10">avi mp3 srt mkv</fileext>
+        </rules>
+        <actions>
+            <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
+        </actions>
+	</filter> -->
+ 
     <!-- Music -->
-    <filter name="Music" path="/home/amule/Download/music/zipped/">
+    <filter name="Music" path="/home/p2p/Downloads/music/zipped/">
         <rules>
             <filename priority="20">Album|Soundtrack</filename>
-	    <filename priority="5">MP3|OGG|WMV</filename>
+            <filename priority="5">MP3|OGG|WMV</filename>
             <filesize_bigger priority="15">50M</filesize_bigger>
-	    <filesize_bigger priority="-10">150M</filesize_bigger>
+            <filesize_bigger priority="-10">150M</filesize_bigger>
             <filesize_smaller priority="-10">10M</filesize_smaller>
             <fileext priority="5" needed="1">rar zip mp3</fileext>
         </rules>
@@ -109,13 +82,14 @@
     </filter>
 
     <!-- Others -->
-    <filter name="Others" path="/home/amule/Download/others/">
+    <filter name="Others" path="/home/p2p/Downloads/others/">
         <rules>
             <filename priority="10">.*</filename>
-	    <filename priority="100">xbox</filename>	
+            <filename priority="100">xbox</filename>
         </rules>
         <actions>
             <exec_linux_cmd>chmod 664 "%f"</exec_linux_cmd>
+            <exec_linux_cmd><![CDATA[/usr/local/sbin/rssappend -m 10 -t "%n" -d "category: <strong>Others</strong><br/>moved: '%d'" -a "aMule" -c "p2p" -g "%n" -k /var/www/feed/p2p-report.xml]]></exec_linux_cmd>
         </actions>
     </filter>
 </movme>
