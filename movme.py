@@ -181,6 +181,9 @@ def movFile (src_path):
     while True:
         i += 1
         status, filter = getFilter(i)
+#        import pprint
+#
+#        pprint.pprint(filter)
 
         # filter 'i' don't extist => end of filter list
         if( not status ): break
@@ -269,23 +272,23 @@ def getPriority (src_path, rules):
             if (rule['nome'] == "filename"):
                 if (re.search( rule['text'], file_name, re.IGNORECASE )):
                     priority += int(rule['priority'])
-                    setLog(3, "     |rule: \033[4mfilename\033[24m (\033[1m%s\033[22m in \033[1m%s\033[22m) %d => \033[1m%d\033[22m" % (rule['text'],file_name,priority-int(rule['priority']),priority), LOG_BD_INFO)
+                    setLog(3, "     |rule: \033[4mfilename\033[24m (\033[1m%s\033[22m in \033[1m%s\033[22m) [%s] %d => \033[1m%d\033[22m" % (rule['text'],file_name,rule['from'],priority-int(rule['priority']),priority), LOG_BD_INFO)
 
                 elif (int(rule['needed'])): # if not match && needed=1 => priority - 1000
                     priority += needed_priority
-                    setLog(3, "     |rule: \033[4mneeded\033[24m filename \033[1mdon't\033[22m respect (\033[1m%s\033[22m in \033[1m%s\033[22m) %d => \033[1m%d\033[22m" % (rule['text'],file_name,priority-int(rule['priority']),priority), LOG_BD_INFO)
+                    setLog(3, "     |rule: \033[4mneeded\033[24m filename \033[1mdon't\033[22m respect (\033[1m%s\033[22m in \033[1m%s\033[22m) [%s] %d => \033[1m%d\033[22m" % (rule['text'],file_name,rule['from'],priority-int(rule['priority']),priority), LOG_BD_INFO)
 
             elif (rule['nome'] == "filesize_bigger"):
                 target_size = memUnitConverter(rule['text'])
                 if (file_size > target_size ): 
                     priority += int(rule['priority'])
-                    setLog(3, "     |rule: \033[4mfilesize_bigger\033[24m (\033[1m%d > %d\033[22m) %d => \033[1m%d\033[22m" % (file_size,target_size,priority-int(rule['priority']),priority), LOG_BD_INFO)
+                    setLog(3, "     |rule: \033[4mfilesize_bigger\033[24m (\033[1m%d > %d\033[22m) [%s] %d => \033[1m%d\033[22m" % (file_size,target_size,rule['from'],priority-int(rule['priority']),priority), LOG_BD_INFO)
 
             elif (rule['nome'] == "filesize_smaller"):
                 target_size = memUnitConverter(rule['text'])
                 if (file_size < target_size ):
                     priority += int(rule['priority'])
-                    setLog(3, "     |rule: \033[4mfilesize_smaller\033[24m (\033[1m%d < %d\033[22m) %d => \033[1m%d\033[22m" % (file_size,target_size,priority-int(rule['priority']),priority), LOG_BD_INFO)
+                    setLog(3, "     |rule: \033[4mfilesize_smaller\033[24m (\033[1m%d < %d\033[22m) [%s] %d => \033[1m%d\033[22m" % (file_size,target_size,rule['from'],priority-int(rule['priority']),priority), LOG_BD_INFO)
 
             elif (file_ext and rule['nome'] == "fileext"):
                 finded = False
@@ -294,12 +297,12 @@ def getPriority (src_path, rules):
                     if (file_ext == ext):
                         priority += int(rule['priority'])
                         finded = True                        
-                        setLog(3, "     |rule: \033[4mfileext\033[24m (\033[1m.%s\033[22m) %d => \033[1m%d\033[22m" % (file_ext,priority-int(rule['priority']),priority), LOG_BD_INFO)
+                        setLog(3, "     |rule: \033[4mfileext\033[24m (\033[1m.%s\033[22m) [%s] %d => \033[1m%d\033[22m" % (file_ext,rule['from'],priority-int(rule['priority']),priority), LOG_BD_INFO)
                         break
 
                 if (int(rule['needed']) and not finded ): # if not match && needed=1 => priority - 1000
                     priority += needed_priority
-                    setLog(3, "     |rule: \033[4mneeded\033[24m fileext \033[1mdon't\033[22m respect (\033[1m.%s\033[22m) %d => \033[1m%d\033[22m" % (file_ext,priority-needed_priority,priority), LOG_BD_INFO)                
+                    setLog(3, "     |rule: \033[4mneeded\033[24m fileext \033[1mdon't\033[22m respect (\033[1m.%s\033[22m) [%s] %d => \033[1m%d\033[22m" % (file_ext,rule['from'],priority-needed_priority,priority), LOG_BD_INFO)                
 
     except:
         setLog(0, "Ricontrolla le \033[1mrules\033[22m nella configurazione!", LOG_BD_ERROR, 1)
@@ -329,7 +332,7 @@ def performActions (file_path, actions):
                 file_name = file_name + action['text']
 
             elif (action['nome'] == "exec_linux_cmd"):
-                linux_cmds.append(action['text'])
+                linux_cmds.append(action)
         
         global g_simulate        
 
@@ -341,7 +344,10 @@ def performActions (file_path, actions):
             setLog(2, " action: \033[4mrename\033[24m (\033[1m%s\033[22m) " % file_name, LOG_BD_INFO)
 
         # if there is some linux cmd, execute all    
-        for cmd in linux_cmds:
+        for linux_cmd in linux_cmds:
+            
+            cmd = linux_cmd['text']
+            
             # substitute special characters
             cmd = cmd.replace( '%n', file_name )    # file name
             cmd = cmd.replace( '%d', file_dir )   # full path
@@ -351,8 +357,8 @@ def performActions (file_path, actions):
             cmd_result = 0
             if (not g_simulated):
                 #cmd_result = os.system( cmd )
-		cmd_result = call( cmd, shell=True)
-            setLog(2, " action: \033[4mexec_linux_cmd\033[24m (\033[1m%s\033[22m) returned \033[1m%d\033[22m" % (cmd, cmd_result), LOG_BD_INFO)
+                cmd_result = call( cmd, shell=True)
+            setLog(2, " action: \033[4mexec_linux_cmd\033[24m (\033[1m%s\033[22m) [%s] returned \033[1m%d\033[22m" % (cmd,linux_cmd['from'],cmd_result), LOG_BD_INFO)
 
     except:
         setLog(0, "Problema durente l'esecuzione degli \033[1mactions\033[22m!", LOG_BD_ERROR, 1)
@@ -450,28 +456,28 @@ def getFilter (filter_number):
     # XML PARSING
     try:
         # open xml (only the first time)
-        if(g_xml_cfg is None): 
-		g_xml_cfg = minidom.parse(g_xml_config_file)
+        if(g_xml_cfg is None):
+            g_xml_cfg = minidom.parse(g_xml_config_file)
         
         # check if correct config
         if(g_xml_cfg.firstChild.tagName != 'movme'):
             setLog(0,"\033[1m%s\033[22m non è un file di configurazione di movme!" % g_xml_config_file, LOG_BD_ERROR, 1)
-
+    
         # get list of all nodes "filter"
         xml_filter = g_xml_cfg.firstChild.getElementsByTagName('filter')
-
+    
         # filter number don't exist
         if(filter_number >= xml_filter.length):
             return 0, None
-
+    
         # select filter
         xml_filter = xml_filter.item(filter_number)
-
+    
         # variable infrastructure
         filter = {}
         rules = [] 
         actions = []
-
+    
         # must be a filter "name" and " "path"
         if(not xml_filter.attributes.has_key('name') or not xml_filter.attributes.has_key('path')):
             setLog(0, "Il filtro \033[1m%d\033[22m non presenta gli attributi \033[1mname\033[22m o \033[1mpath\033[22m!" % filter_number, LOG_BD_ERROR)
@@ -482,50 +488,131 @@ def getFilter (filter_number):
             if (xml_filter.attributes.has_key('mkdir')):          
                 filter['mkdir'] = xml_filter.attributes['mkdir'].value
             else: filter['mkdir'] = 0    # default value
-
-        # get list of all node in rules node
-        xml_rules = xml_filter.getElementsByTagName('rules')[0].childNodes         
-
-        # read list of rules
-        for rule in xml_rules:
-            # only if is an ELEMENT_NODE
-            if(rule.nodeType == 1):
-                current_rule = {}
-                # get rule attributes
-                current_rule['nome'] = rule.nodeName
-                if (rule.attributes.has_key('needed')):          
-                    current_rule['needed'] = rule.getAttribute('needed')
-                else: current_rule['needed'] = 0    # default value
-                current_rule['priority'] = rule.getAttribute('priority')
-                current_rule['text'] = rule.firstChild.nodeValue            
-
-                # read attrib of each rule and store in var structure
-                rules.append(current_rule) 
         
-        # add to var structure     
-        filter['rules'] = rules
+    #        # get list of all node in rules node
+    #        xml_rules = xml_filter.getElementsByTagName('rules')[0].childNodes         
+    #
+    #        # read list of rules
+    #        for rule in xml_rules:
+    #            # only if is an ELEMENT_NODE
+    #            if(rule.nodeType == 1):
+    #                current_rule = {}
+    #                # get rule attributes
+    #                current_rule['nome'] = rule.nodeName
+    #                if (rule.attributes.has_key('needed')):          
+    #                    current_rule['needed'] = rule.getAttribute('needed')
+    #                else: current_rule['needed'] = 0    # default value
+    #                current_rule['priority'] = rule.getAttribute('priority')
+    #                current_rule['text'] = rule.firstChild.nodeValue            
+    #
+    #                # read attrib of each rule and store in var structure
+    #                rules.append(current_rule) 
+    #        
+    #        # add to var structure     
+    #        filter['rules'] = rules
+        
+#        # get list of all node in actions node
+#        xml_actions = xml_filter.getElementsByTagName('actions')[0].childNodes
+#    
+#        # read list of actions
+#        for action in xml_actions:
+#            # only if is an ELEMENT_NODE (1)
+#            if(action.nodeType == 1):
+#                # read attrib of each action and store in var structure
+#                actions.append({'nome':action.nodeName,'text':action.firstChild.nodeValue}) 
+    
+        # get list of all node in rules node
+        filter['rules'] = getParentTags (xml_filter, 'rules')
 
-        # get list of all node in actions node
-        xml_actions = xml_filter.getElementsByTagName('actions')[0].childNodes
-
-        # read list of actions
-        for action in xml_actions:
-            # only if is an ELEMENT_NODE (1)
-            if(action.nodeType == 1):
-                # read attrib of each action and store in var structure
-                actions.append({'nome':action.nodeName,'text':action.firstChild.nodeValue}) 
-
-        # add to var structure     
-        filter['actions'] = actions
-
-    except:
-        setLog(0, "Ricontrolliamo il file \033[1m%s\033[22m!" % g_xml_config_file, LOG_BD_ERROR, 1)
+        # get list of all node in actions node     
+        filter['actions'] = getParentTags (xml_filter, 'actions')
+        
+    except Exception, e:
+        setLog(0, "Ricontrolliamo il file \033[1m%s\033[22m!\n%s" % (g_xml_config_file, e), LOG_BD_ERROR, 1)
     else:
-        setLog(3, "Filtro \033[1m%s\033[22m (rules: \033[1m%u\033[22m, actions: \033[1m%u\033[22m) caricato da %s" % (filter['name'],len(rules),len(actions),g_xml_config_file), LOG_BD_INFO)
+        setLog(3, "Filtro \033[1m%s\033[22m (rules: \033[1m%u\033[22m, actions: \033[1m%u\033[22m) caricato da %s" % (filter['name'],len(filter['rules']),len(filter['actions']),g_xml_config_file), LOG_BD_INFO)
         
         # return succesfull and filter structure
         return 1, filter
 
+# Get all tag_name inherit from <group> tag
+# @target: nodeObj - xml tag filter where i start
+# @tag_name: string - tag i must inherit (es. actions, rules)
+# @return: list - all tag inherited
+def getParentTags (target, tag_name):
+    
+    child_tag = []
+    
+    # Risalgo i tags (da figlio a padre) 
+    while True:
+        for children in target.childNodes:
+            
+            if (children.nodeType == children.ELEMENT_NODE and children.tagName == tag_name):
+                for child in children.childNodes:
+                    # ...iterate on all list of child nodes of tag_name (es. [filename, filesize_bigger, ...]) 
+                    # read attrib of each xml_tag and store in var structure
+                    if( child.nodeType == child.ELEMENT_NODE):
+                        current = {}
+                        
+                        # get common tag_name attributes
+                        current['nome'] = child.nodeName
+                        current['text'] = child.firstChild.nodeValue
+                        
+                        # add info from inherit
+                        if (target.tagName == 'group'): 
+                            current['from'] = target.tagName    
+                            if (target.attributes.has_key('name')): 
+                                current['from'] += '.' + target.attributes['name'].value
+                        else: current['from'] = 'self'
+                        
+                        # particulary attribs
+                        if (tag_name == 'rules'):
+                            # get tag_name attributes
+                            if (child.attributes.has_key('needed')):          
+                                current['needed'] = child.getAttribute('needed')
+                            else: 
+                                current['needed'] = 0    # default value
+                            current['priority'] = child.getAttribute('priority')
+                         
+                        # actions don't have any particular attribs
+                        #elif (tag_name == 'actions'):
+                        
+                        child_tag.append(current)
+                        
+        # go back in the xml tree            
+        target = target.parentNode
+                 
+        # exit when arrive to tag <movme> or when father is not group (impossible)
+        if (target.tagName == 'movme' or target.tagName != 'group'): break;
+
+#    
+#    print "-------------------after---------------------\n",mTarget.toxml()
+#    # Get list of all child node of tag_name...
+#    for xml_tags in target.getElementsByTagName(tag_name):
+#        
+#        # ...iterate on all tag_name nodes (es. [rules(1), rules(2), ...])
+#        for xml_tag in xml_tags.childNodes:
+#            
+#            # ...iterate on all list of child nodes of tag_name (es. [filename, filesize_bigger, ...]) 
+#            # only if is an ELEMENT_NODE
+#            if (xml_tag.nodeType == 1):
+#                if (tag_name == 'rules'):
+#                    current = {}
+#                    # get xml_tag attributes
+#                    current['nome'] = xml_tag.nodeName
+#                    if (xml_tag.attributes.has_key('needed')):          
+#                        current['needed'] = xml_tag.getAttribute('needed')
+#                    else: current['needed'] = 0    # default value
+#                    current['priority'] = xml_tag.getAttribute('priority')
+#                    current['text'] = xml_tag.firstChild.nodeValue            
+#            
+#                    # read attrib of each xml_tag and store in var structure
+#                    child_tag.append(current)
+#                elif (tag_name == 'actions'):
+#                    # read attrib of each action and store in var structure
+#                    child_tag.append({'nome':xml_tag.nodeName,'text':xml_tag.firstChild.nodeValue}) 
+    
+    return child_tag
 
 if __name__ == "__main__":
     main(sys.argv[1:])
