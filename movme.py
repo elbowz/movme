@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 # =======================================
-# movme v1.0b - Copyright 2010
+# movme v1.6b - Copyright 2012
 # Writted by muttley
-# Get last version from muttley.eb2a.com
+# Get last version from http://code.google.com/p/unuseful-code/
 # =======================================
 
 import os
@@ -243,7 +243,7 @@ def movFile (src_path):
     else:
         # perform actions
         if( len(used_filter['actions']) ): 
-            performActions( os.path.join(used_filter['path'], os.path.basename(src_path)), used_filter['actions'] )
+            performActions( os.path.join(used_filter['path'], os.path.basename(src_path)), used_filter['actions'], used_filter['name'])
         
         return True
 
@@ -313,7 +313,7 @@ def getPriority (src_path, rules):
 # perform actions listed in xml config
 # @file_path: char - file path target
 # @return: bool - true: all ok
-def performActions (file_path, actions):
+def performActions (file_path, actions, filterName):
 
     file_renamed = False
     file_name = os.path.basename(file_path)  # name.ext 
@@ -349,16 +349,18 @@ def performActions (file_path, actions):
             cmd = linux_cmd['text']
             
             # substitute special characters
-            cmd = cmd.replace( '%n', file_name )    # file name
-            cmd = cmd.replace( '%d', file_dir )   # full path
-            cmd = cmd.replace( '%f', os.path.join(file_dir , file_name) )   # full path + file name
+            cmd = cmd.replace( '%filename', file_name )    # file name
+            cmd = cmd.replace( '%filedir', file_dir )   # full path
+            cmd = cmd.replace( '%filepath', os.path.join(file_dir , file_name) )   # full path + file name
+            cmd = cmd.replace( '%filtername', filterName )
+            cmd = cmd.replace( '%actioninherit', linux_cmd['from'] )
 
             #execute command
             cmd_result = 0
             if (not g_simulated):
                 #cmd_result = os.system( cmd )
                 cmd_result = call( cmd, shell=True)
-            setLog(2, " action: \033[4mexec_linux_cmd\033[24m (\033[1m%s\033[22m) [%s] returned \033[1m%d\033[22m" % (cmd,linux_cmd['from'],cmd_result), LOG_BD_INFO)
+            setLog(2, " action: \033[4mexec_linux_cmd\033[24m (\033[1m%s\033[22m) [%s] returned \033[1m%d\033[22m" % (cmd, linux_cmd['from'], cmd_result), LOG_BD_INFO)
 
     except:
         setLog(0, "Problema durente l'esecuzione degli \033[1mactions\033[22m!", LOG_BD_ERROR, 1)
@@ -528,7 +530,7 @@ def getFilter (filter_number):
         filter['actions'] = getParentTags (xml_filter, 'actions')
         
     except Exception, e:
-        setLog(0, "Ricontrolliamo il file \033[1m%s\033[22m!\n%s" % (g_xml_config_file, e), LOG_BD_ERROR, 1)
+        setLog(0, "Ricontrolliamo il file \033[1m%s\033[22m (%s)!" % (g_xml_config_file, e), LOG_BD_ERROR, 1)
     else:
         setLog(3, "Filtro \033[1m%s\033[22m (rules: \033[1m%u\033[22m, actions: \033[1m%u\033[22m) caricato da %s" % (filter['name'],len(filter['rules']),len(filter['actions']),g_xml_config_file), LOG_BD_INFO)
         
