@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # =======================================
-# movme v1.6b - Copyright 2012
+# movme v1.7b - Copyright 2012
 # Writted by muttley
 # Get last version from http://code.google.com/p/unuseful-code/
 # =======================================
@@ -394,7 +394,7 @@ def setLog (verbose_level, text, msgType = 0, exit = -1):
     # make log file 
     if ( g_log_file ):
         import time # get current time for log file
-        current_time = time.strftime("%b %d %H:%M:%S")                                       
+        current_time = time.strftime("%y %b %d %H:%M:%S")                                       
 
         file_log = open(g_log_file, 'a')                             
 
